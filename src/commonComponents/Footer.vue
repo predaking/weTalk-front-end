@@ -21,7 +21,7 @@
           text: "首页",
           icon: "ios-home",
           outlineIcon: "ios-home-outline",
-          path: '/'
+          path: '/Main'
         },
         {
           text: "发布",
@@ -39,7 +39,7 @@
     },
     mounted() {
       switch(this.$route.fullPath) {
-        case '/': {
+        case '/Main': {
           this.currentTab = 0;
           break;
         }

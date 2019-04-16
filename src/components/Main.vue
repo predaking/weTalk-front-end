@@ -1,49 +1,49 @@
 <template>
 <div>
-  <Card id="topSide" :bordered="false">动态</Card>
-  <Scroll :on-reach-bottom="handleReachBottom" style="background-color:#fff;padding-top:32px" :distance-to-edge=[0,0]>
-    <Card id="content" dis-hover v-for="(item, index) in list3" :key="index" :bordered="false" style="margin: 2px 0;border-bottom:1px solid #eee">
+  <Card id="topSide" :bordered="false"><a href="#content" style="color:#fff">动态</a></Card>
+  <Scroll id="scroll" :on-reach-bottom="handleReachBottom" :distance-to-edge=[0,0]>
+    <Card id="content" dis-hover v-for="(item, index) in articleData" :key="index" :bordered="false">
       <Row>
         <Col span="4">
-        <div id="head"><img src="../assets/guanyu.png" /></div>
+        <div id="head"><img :src="item.head" /></div>
         </Col>
         <Col span="20" style="height:40px;">
         <Row>
-          <Col span="12">关羽</Col>
-          <Col span="12" style="text-align:right;">荆州南郡</Col>
+          <Col span="12">{{item.nickname}}</Col>
+          <Col span="12" style="text-align:right;">{{item.location}}</Col>
         </Row>
         <Row>
-          <Col style="font-size: 12px;color:#bbb;line-height: 25px;padding-bottom: 0px;height: 20px;">1小时前</Col>
+          <Col id="time-col">{{item.publish_time}}</Col>
         </Row>
         </Col>
       </Row>
       <Row style="margin-top:10px">
         <Col>
-        <div ref="desc" style="border: 0;width: 100%;color:inherit;word-break:break-all;white-space:pre-wrap;text-align:justify" @click="$router.push('/Detail')">{{newDesc}}<span v-if="isAllArticle" style="color:blue">全文</span></div>
+        <div id="desc" ref="desc" @click="$router.push('/Detail')">{{content(index)}}<span v-if="isAllArticle(index)" style="color:blue">全文</span></div>
         </Col>
       </Row>
       <Row style="margin-top:10px">
-        <Col v-for="(item, imgIndex) in imgList" :key="imgIndex" span="8" style="height:100px;width:33.3333%"><img :src="item.imgsrc" style="height:inherit;width:100%" /></Col>
+        <Col v-for="(img, imgIndex) in item.articlePicture" :key="imgIndex" span="8" style="height:100px;width:33.3333%"><img :src="'/api/img/' + img.picture_url" style="height:inherit;width:100%" /></Col>
       </Row>
       <Row style="margin-top:10px">
         <Col span="8" style="text-align:center">
-        <i class="fa fa-thumbs-o-up" v-if="isPraised==false" @click="praise()"></i>
-        <i class="fa fa-thumbs-up" v-if="isPraised==true" @click="praise()"></i>
-        {{" " + countList[0]}}
+        <i class="fa fa-thumbs-o-up" v-if="!isPraised(index)" @click="praised(index)"></i>
+        <i class="fa fa-thumbs-up" v-if="isPraised(index)" @click="praised(index)"></i>
+        {{" " + item.praise_count}}
         </Col>
         <Col span="8" style="text-align:center">
         <i class="fa fa-commenting-o" @click="$router.push('/Detail')"></i>
-        {{" " + countList[1]}}
+        {{" " + item.comment_count}}
         </Col>
         <Col span="8" style="text-align:center">
         <i class="fa fa-external-link" @click="transmitModal=true"></i>
-        {{" " + countList[2]}}
+        {{" " + item.transmit_count}}
         </Col>
       </Row>
     </Card>
   </Scroll>
   <Modal v-model="transmitModal" @on-ok="ok" :mask-closable="false" :closable="false" :transfer="false">
-    <textarea placeholder="输入转发理由" v-model="transmitText" autofocus="true" style="width:100%;resize:none;border:0;"></textarea>
+    <textarea id="transmit-area" placeholder="输入转发理由" v-model="transmitText" autofocus="true"></textarea>
   </Modal>
   <Footer style=""></Footer>
 </div>
@@ -53,43 +53,75 @@ export default {
   data() {
     return {
       transmitModal: false,
-      isAllArticle: false,
-      isPraised: false,
-      desc: "看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！",
       list3: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-      imgList: [{
-        imgsrc: require('../assets/huaxiong.png')
-      }, {
-        imgsrc: require('../assets/yanliangwenchou.png')
-      }, {
-        imgsrc: require('../assets/pangde.png')
-      }],
-      countList: [400, 39, 7],
-      transmitText: ''
+      transmitText: '',
+      articleData: [],
+      articleLength: 0,
+      // praisedSign: [],
     }
   },
   mounted() {
+    var i = 0;
     this.axios({
-      method:"get",
-      url: "/api/ttt",
+      method: "get",
+      url: "/api/articleList",
+      // url: "/api/data",
       headers: {
         token: this.$store.state.token
       },
-    }).then((res)=>{
-    }).catch((err)=>{
-    })
-    // this.$router.push("/Me/Login");
+    }).then((res) => {
+      this.articleData = res.data.data;
+      // for (; i < res.data.data.length; i++) {
+      //   this.praisedSign[i] = false
+      // }
+    }).catch((err) => {})
   },
   computed: {
-    newDesc: function() {
-      if (this.desc.length > 80) {
-        this.isAllArticle = true
-        return this.desc.slice(0, 80) + "..."
-      } else
-        return this.desc.slice(0, 80)
-    }
+    content() {
+      return function(index) {
+        if (this.articleData[index].content.length > 80) {
+          return this.articleData[index].content.slice(0, 80) + "..."
+        } else {
+          return this.articleData[index].content
+        }
+      }
+    },
+    isAllArticle() {
+      return function(index) {
+        if (this.articleData[index].content.length > 80)
+          return true;
+        else
+          return false;
+      }
+    },
+    isPraised() {
+      return function(index) {
+        return this.praisedSign[index];
+      }
+    },
   },
   methods: {
+    praised(index) {
+      if (this.praisedSign[index]) {
+        this.articleData[index].praise_count--;
+        this.praisedSign[index] = false;
+      } else {
+        this.articleData[index].praise_count++;
+        this.praisedSign[index] = true;
+      }
+      this.axios({
+        url: '/api/praise',
+        method: 'post',
+        params: {
+          id: this.articleData[index].id,
+          praiseCount: this.articleData[index].praise_count
+        }
+      }).then((res) => {
+        console.log(res);
+      }).catch((err) => {
+        console.log(err);
+      })
+    },
     handleReachBottom(dir) {
       return new Promise(resolve => {
         setTimeout(() => {
@@ -108,15 +140,6 @@ export default {
         }, 2000);
       });
     },
-    praise() {
-      if (this.isPraised) {
-        this.countList[0]--;
-        this.isPraised = false;
-      } else {
-        this.countList[0]++;
-        this.isPraised = true;
-      }
-    },
     ok() {
       console.log(this.transmitText)
     }
@@ -124,6 +147,39 @@ export default {
 }
 </script>
 <style scoped>
+#scroll {
+  background-color: #fff;
+  padding-top: 45px;
+}
+
+#content {
+  margin: 2px 0;
+  border-bottom: 1px solid #eee;
+}
+
+#time-col {
+  font-size: 12px;
+  color: #bbb;
+  line-height: 25px;
+  padding-bottom: 0px;
+  height: 20px;
+}
+
+#desc {
+  border: 0;
+  width: 100%;
+  color: inherit;
+  word-break: break-all;
+  white-space: pre-wrap;
+  text-align: justify;
+}
+
+#transmit-area {
+  width: 100%;
+  resize: none;
+  border: 0;
+}
+
 #head {
   width: 40px;
   height: 40px;

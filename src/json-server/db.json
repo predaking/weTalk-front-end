@@ -1,74 +1,64 @@
 {
-  "list": [
-    {
-      "id": 1,
-      "name": "张三",
-      "tel": "15223810923"
-    },
-    {
-      "id": 2,
-      "name": "李四",
-      "tel": "15223810923"
-    },
-    {
-      "id": 3,
-      "name": "王二",
-      "tel": "15223810923"
-    },
-    {
-      "id": 4,
-      "name": "陈五",
-      "tel": "15223810923"
-    },
-    {
-      "name": "赵六",
-      "tel": "123454323",
-      "id": 5
-    },
-    {
-      "name": "赵六",
-      "tel": "123454323",
-      "id": 6
-    },
-    {
-      "name": "赵六",
-      "tel": "123454323",
-      "id": 7
-    }
-  ],
-  "users": [
-    {
-      "id": 1,
-      "name": "陈五",
-      "sex":"male",
-      "tel": "12345678",
-      "auther":{
-        "name":"陈五",
-        "age":"25"
-      }
-    },
-    {
-      "id": 2,
-      "name": "王二",
-      "sex":"male",
-      "tel": "15223810923",
-      "auther":{
-        "name":"王二",
-        "age":"22"
-      }
-    }
-  ],
-  "user": {
-      "id": 1,
-      "name": "陈五",
-      "tel": "15223810923"
-    }
-    ,
-  "posts": [
-    { "id": 1, "title": "json-server", "author": "typicode" }
-  ],
-  "comments": [
-    { "id": 1, "body": "some comment", "postId": 1 }
-  ],
-  "profile": { "name": "typicode" }
+  "data": [{
+    "id": 65,
+    "nickname": "快银",
+    "head": "/api/img/1b59286c40b50c2f.jpg",
+    "location": "北京市",
+    "publish_time": "2019-04-11 13:35:28",
+    "content": "今天终于打上了少允段位。。哈哈哈..............................................................................................",
+    "praise_count": 0,
+    "comment_count": 0,
+    "transmit_count": 0,
+    "article_type": "原创",
+    "transmit_id": -1,
+    "transmit_content": null,
+    "transmit_nickname": null,
+    "articlePicture": [{
+      "id": 26,
+      "picture_id": 65,
+      "picture_url": "-30fa569aedc509d3.jpg"
+    }]
+  }, {
+    "id": 66,
+    "nickname": "快银",
+    "head": "/api/img/1b59286c40b50c2f.jpg",
+    "location": "北京市",
+    "publish_time": "2019-04-11 15:49:54",
+    "content": "一周又过去了。。。。。。。。。。。。。",
+    "praise_count": 0,
+    "comment_count": 0,
+    "transmit_count": 0,
+    "article_type": "原创",
+    "transmit_id": -1,
+    "transmit_content": null,
+    "transmit_nickname": null,
+    "articlePicture": [{
+      "id": 27,
+      "picture_id": 66,
+      "picture_url": "-16111477d4f80c99.jpg"
+    }, {
+      "id": 28,
+      "picture_id": 66,
+      "picture_url": "7067499c60871a47.jpg"
+    }]
+  }, {
+    "id": 67,
+    "nickname": "快银",
+    "head": "/api/img/1b59286c40b50c2f.jpg",
+    "location": "北京市",
+    "publish_time": "2019-04-11 20:22:02",
+    "content": "啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊",
+    "praise_count": 0,
+    "comment_count": 0,
+    "transmit_count": 0,
+    "article_type": "原创",
+    "transmit_id": -1,
+    "transmit_content": null,
+    "transmit_nickname": null,
+    "articlePicture": [{
+      "id": 29,
+      "picture_id": 67,
+      "picture_url": "63e3a254c5202e57.jpg"
+    }]
+  }]
 }

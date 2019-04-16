@@ -66,14 +66,13 @@ export default {
             else {
               this.$store.commit('loginInfo', {
                 token: res.data.token,
-                nickname: res.data.nickname
+                nickname: res.data.nickname,
+                user_id: res.data.user_id
               })
-              console.log("成功了")
-              sessionStorage.setItem("store",JSON.stringify(this.$store.state))
-              
               if(res.data.head)
               this.$store.state.headImgSrc = '/api/img/' + res.data.head;
-              this.$router.push('/');
+              sessionStorage.setItem("store",JSON.stringify(this.$store.state))
+              this.$router.push('/Main');
             }
           })
         } else {

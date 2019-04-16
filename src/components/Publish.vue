@@ -2,36 +2,26 @@
 <div>
   <Card id="topSide" :bordered="false">
     <Icon type="ios-arrow-back" id="back" @click="$router.go(-1)"></Icon>发布动态
-    <span style="position:absolute;right:20px">发布</span>
+    <span style="position:absolute;right:20px" @click="publish">发布</span>
   </Card>
   <div id="content">
-    <textarea id="textArea" placeholder="说你所想..."></textarea>
+    <textarea id="textArea" placeholder="说你所想..." v-model="content"></textarea>
     <Row>
       <Col span="8" class="demo-upload-list" v-for="(item, index) in uploadList" :key="index" ref="myImgBox">
-        <img :src="item.url" ref="myImg">
-        <!-- <div class="demo-upload-list-cover"> -->
-          <Icon type="ios-close" @click.native="handleRemove(item)" id="moveIcon"></Icon>
-        <!-- </div> -->
+      <img :src="item.url" ref="myImg">
+      <!-- <div class="demo-upload-list-cover"> -->
+      <Icon type="ios-close" @click.native="handleRemove(item)" id="moveIcon"></Icon>
+      <!-- </div> -->
       </Col>
-      <Upload
-        id="upload"
-        ref="upload"
-        :show-upload-list="false"
-        :format="['jpg','jpeg','png','webp']"
-        :max-size="2048"
-        :before-upload="handleBeforeUpload"
-        :on-format-error="handleFormatError"
-        :on-exceeded-size="handleMaxSize"
-        type="drag"
-        action=""
-        multiple
-        style="display: inline-block;height:100px;line-height: 100px;width:33.3333%;min-width:100px"
-        :class="{ hideUpLoadSign: isHidden}">
+      <Upload id="upload" ref="upload" :show-upload-list="false" :format="['jpg','jpeg','png','webp']" :max-size="2048" :before-upload="handleBeforeUpload" :on-format-error="handleFormatError" :on-exceeded-size="handleMaxSize" type="drag" action="/api/publish"
+        multiple style="display: inline-block;height:100px;line-height: 100px;width:33.3333%;min-width:100px" :class="{ hideUpLoadSign: isHidden}">
         <div style="width: 100%;height:100px;line-height: 100px;color:whitesmoke">
           <Icon type="ios-add" size="80"></Icon>
         </div>
       </Upload>
-      <p style="margin-top:5px"><Icon type="ios-pin-outline" style="font-size:18px;margin-top:-4px"></Icon>{{pos}}</p>
+      <p style="margin-top:5px">
+        <Icon type="ios-pin-outline" style="font-size:18px;margin-top:-4px"></Icon>{{pos}}
+      </p>
     </Row>
   </div>
 </div>
@@ -43,6 +33,7 @@ export default {
   data() {
     return {
       uploadList: [],
+      content: '',
       isHidden: false,
       imgsrc: [],
       city: '定位中...',
@@ -54,11 +45,9 @@ export default {
     }
   },
   mounted() {
-    // this.$store.commit('countTest');
-    console.log("此时的count：" + this.$store.state.count)
     var that = this;
     var geolocation = new BMap.Geolocation({
-      maximumAge:10
+      maximumAge: 10
     });
     geolocation.getCurrentPosition(function(r) {
       if (this.getStatus() == BMAP_STATUS_SUCCESS) {
@@ -73,6 +62,11 @@ export default {
       enableHighAccuracy: true
     })
   },
+  computed: {
+    pos: function() {
+      return this.city + this.district;
+    }
+  },
   methods: {
     handleBeforeUpload(file) {
       // 创建一个 FileReader 对象
@@ -82,18 +76,19 @@ export default {
       reader.onloadend = function(e) {
         file.url = reader.result
         if (file.type.slice(0, 5) == "image") {
-            var check = _this.uploadList.length < MAX_LENGTH;
-            if (!check) {
-              _this.$Notice.warning({
-                title: '最多上传九张照片'
-              })
-              return check
-            }
-            _this.uploadList.push(file)
-            if(_this.uploadList.length > MAX_LENGTH - 1)
-              _this.isHidden = true
+          var check = _this.uploadList.length < MAX_LENGTH;
+          if (!check) {
+            _this.$Notice.warning({
+              title: '最多上传九张照片'
+            })
+            return check
+          }
+          _this.uploadList.push(file)
+          if (_this.uploadList.length > MAX_LENGTH - 1)
+            _this.isHidden = true
         }
       }
+      return false;
     },
     handleRemove(file) {
       this.uploadList.splice(this.uploadList.indexOf(file), 1)
@@ -111,11 +106,23 @@ export default {
         desc: '文件 ' + file.name + ' 太大，不能超过 2M。'
       })
     },
-  },
-  computed: {
-    pos: function() {
-      return this.city + this.district;
-    }
+    publish() {
+      var currentDate = new Date();
+      var formData = new FormData();
+      for (var i = 0; i < this.uploadList.length; i++) {
+        formData.append("files", this.uploadList[i])
+      }
+      formData.append("nickname", this.$store.state.nickname);
+      formData.append("head", this.$store.state.headImgSrc);
+      formData.append("location", this.pos);
+      formData.append("publish_time", currentDate);
+      formData.append("content", this.content);
+      this.axios.post('/api/publish',
+          formData
+      ).then((res) => {
+        console.log(res);
+      })
+    },
   }
 }
 </script>
@@ -131,6 +138,9 @@ export default {
   width: fill-available;
   height: 150px;
   resize: none;
+  /* word-break: break-all; */
+  white-space: pre-wrap;
+  text-align: justify;
 }
 
 .hideUpLoadSign {
@@ -165,7 +175,7 @@ export default {
   top: 0;
   bottom: 0;
   left: 0;
-  right:0;
+  right: 0;
   /* background: rgba(0, 0, 0, .6); */
 }
 
@@ -187,9 +197,8 @@ export default {
   color: #fff;
   font-size: 20px;
   cursor: pointer;
-  background-color: rgba(0,0,0,0.6);
+  background-color: rgba(0, 0, 0, 0.6);
 }
-
 </style>
 <style>
 #upload .ivu-upload-drag {

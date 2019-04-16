@@ -26,7 +26,7 @@
       <Button id="login-button" type="primary" @click="handleSubmit('formInline')">注册</Button>
     </FormItem>
     <FormItem class="loginItem" style="text-align:center;margin:40px 40px 0px">
-      <p class="operspan" @click="$router.push('/Me/Login')">已有账号，立即登录</p>
+      <p class="operspan" @click="$router.push('/')">已有账号，立即登录</p>
     </FormItem>
   </Form>
 </div>
@@ -97,7 +97,7 @@ export default {
         if (valid) {
           this.axios({
             method:"post",
-            url: this.globalVariable.baseUrl + "register",
+            url: "/api/register",
             data: {
               nickname: this.formInline.user,
               password: this.formInline.password,
@@ -108,8 +108,13 @@ export default {
             if(res.data.code === -1)
               this.$Message.error(res.data.msg);
             else {
-              this.globalVariable.token = res.data.data;
-              this.$router.push('/');
+              this.$store.commit('loginInfo', {
+                token: res.data.token,
+                nickname: this.formInline.user,
+                user_id: res.data.user_id
+              })
+              sessionStorage.setItem("store",JSON.stringify(this.$store.state))
+              this.$router.push('/Main');
             }
           })
         } else {

@@ -15,7 +15,7 @@ Vue.use(Router)
 const router = new Router({
   routes: [
     {
-      path: '/',
+      path: '/Main',
       name: 'Main',
       component: Main
     },
@@ -25,7 +25,7 @@ const router = new Router({
       component: Detail
     },
     {
-      path: '/Me/Login',
+      path: '/',
       name: 'Login',
       component: Login
     },

@@ -21,8 +21,8 @@
     </div>
     <p id="nickName">{{nickname}}</p>
   </div>
-  <div class="item" style="border-top:0" @click="jump('/Me/ChangeInfo')">修改资料</div>
-  <div class="item" @click="jump('/Me/ChangePsw')">修改密码</div>
+  <div class="item" style="border-top:0" @click="$router.push('/Me/ChangeInfo')">修改资料</div>
+  <div class="item" @click="$router.push('/Me/ChangePsw')">修改密码</div>
   <div class="item" id="rollOut" @click="rollOut">退出登录</div>
   <Footer></Footer>
 </div>
@@ -58,6 +58,7 @@ export default {
         file.url = reader.result
         if (file.type.slice(0, 5) == "image") {
             _this.headImgSrc = file.url;
+            console.log(file)
         }
       }
     },
@@ -74,17 +75,20 @@ export default {
       })
     },
     handleSuccess(res, file) {
-      this.headImgSrc = '/api/img/' + res.data;
-      this.$store.state.headImgSrc = this.headImgSrc;
+      if(res.code === 200) {
+        this.headImgSrc = '/api/img/' + res.data;
+        this.$store.state.headImgSrc = this.headImgSrc;
+      }
     },
     rollOut() {
       this.$store.commit('loginInfo', {
+        user_id: "",
         nickname: "管理员",
         token: ""
       })
       this.$store.state.headImgSrc = require("../assets/head-boy.jpg");
       sessionStorage.setItem("store",JSON.stringify(this.$store.state))
-      this.$router.push("/Me/Login");
+      this.$router.push("/");
     }
   }
 }

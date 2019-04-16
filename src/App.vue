@@ -140,8 +140,8 @@ textarea:focus {
 }
 
 .ivu-scroll-content {
-  padding-bottom: 20px !important;
-  padding-top: 15px !important;
+  padding-bottom: 50px !important;
+  /* padding-top: 15px !important; */
 }
 
 .ivu-spin-fix .ivu-spin-main {
@@ -149,6 +149,9 @@ textarea:focus {
   bottom: -65px;
 }
 
+.ivu-scroll-loader-wrapper-active {
+  height: 80px !important;
+}
 /* iview确认框样式修改 */
 .ivu-modal-body {
   font-size: inherit;

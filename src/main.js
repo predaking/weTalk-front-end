@@ -15,21 +15,24 @@ Vue.use(iView, {
   size: 'large'
 })
 Vue.prototype.axios = axios
-// Vue.prototype.globalVariable = globalVariable
-axios.defaults.headers.post['Content-Type'] = 'application/json'
+// axios.defaults.headers.post["Content-Type"]='application/x-www-form-urlencoded'
 Vue.component('Footer', Footer)
 Vue.component('test-cp', {
   props: ['item'],
   template: '<li>{{item.content}}</li>'
 })
 router.beforeEach((to, from, next) => {
-  if (JSON.parse(sessionStorage.getItem("store")).token || to.path === "/Me/Login" || to.path === "/Me/Register") {
-    console.log(JSON.parse(sessionStorage.getItem("store")))
-    next()
-  }
+  if (to.path === "/"
+    || to.path === "/Me/Register"
+    || (JSON.parse(sessionStorage.getItem("store"))
+    && JSON.parse(sessionStorage.getItem("store")).token))
+    {
+      console.log(sessionStorage.getItem("store"))
+      next()
+    }
   else {
     next({
-      path: "/Me/Login"
+      path: "/"
     })
   }
 })

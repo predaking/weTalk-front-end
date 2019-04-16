@@ -7,6 +7,7 @@ const store = new Vuex.Store({
   state: {
     count: 0,
     token: '',
+    user_id: '',
     nickname: '管理员',
     headImgSrc: require("../assets/head-boy.jpg")
   },
