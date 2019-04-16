@@ -9,12 +9,24 @@ const store = new Vuex.Store({
     token: '',
     user_id: '',
     nickname: '管理员',
-    headImgSrc: require("../assets/head-boy.jpg")
+    headImgSrc: require("../assets/head-boy.jpg"),
+
+    city: '定位中...',
+    cityCode: '',
+    district: '',
+    province: '',
+    street: '',
+    streetNumber: ''
   },
   mutations: {
     loginInfo(state, payload) {
       store.state.token = payload.token;
       store.state.nickname = payload.nickname;
+    }
+  },
+  getters: {
+    pos: (state) => {
+      return state.city + state.district
     }
   }
 })

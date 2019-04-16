@@ -36,12 +36,6 @@ export default {
       content: '',
       isHidden: false,
       imgsrc: [],
-      city: '定位中...',
-      cityCode: '',
-      district: '',
-      province: '',
-      street: '',
-      streetNumber: ''
     }
   },
   mounted() {
@@ -51,10 +45,10 @@ export default {
     });
     geolocation.getCurrentPosition(function(r) {
       if (this.getStatus() == BMAP_STATUS_SUCCESS) {
-        that.city = r.address.city;
-        that.district = r.address.district;
-        that.street = r.address.street;
-        that.streetNumber = r.address.street_number;
+        that.$store.state.city = r.address.city;
+        that.$store.state.district = r.address.district;
+        that.$store.state.street = r.address.street;
+        that.$store.state.streetNumber = r.address.street_number;
       } else {
         alert('failed' + this.getStatus());
       }
@@ -64,7 +58,7 @@ export default {
   },
   computed: {
     pos: function() {
-      return this.city + this.district;
+      return this.$store.getters.pos;
     }
   },
   methods: {

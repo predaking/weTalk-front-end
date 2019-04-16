@@ -5,7 +5,7 @@
     <Card id="content" dis-hover v-for="(item, index) in articleData" :key="index" :bordered="false">
       <Row>
         <Col span="4">
-        <div id="head"><img :src="item.head" /></div>
+        <div id="head"><img :src="'/api/img/' + item.head" /></div>
         </Col>
         <Col span="20" style="height:40px;">
         <Row>
@@ -17,18 +17,31 @@
         </Row>
         </Col>
       </Row>
-      <Row style="margin-top:10px">
-        <Col>
-        <div id="desc" ref="desc" @click="$router.push('/Detail')">{{content(index)}}<span v-if="isAllArticle(index)" style="color:blue">全文</span></div>
-        </Col>
-      </Row>
-      <Row style="margin-top:10px">
-        <Col v-for="(img, imgIndex) in item.articlePicture" :key="imgIndex" span="8" style="height:100px;width:33.3333%"><img :src="'/api/img/' + img.picture_url" style="height:inherit;width:100%" /></Col>
-      </Row>
+      <div v-if="item.article_type==='原创'">
+        <Row style="margin-top:10px">
+          <Col>
+          <div id="desc" ref="desc" @click="$router.push('/Detail')">{{content(index)}}<span v-if="isAllArticle(index)" style="color:blue">全文</span></div>
+          </Col>
+        </Row>
+        <Row style="margin-top:10px">
+          <Col v-for="(img, imgIndex) in item.articlePicture" :key="imgIndex" span="8" style="height:100px;width:33.3333%"><img :src="'/api/img/' + img.picture_url" style="height:inherit;width:100%" /></Col>
+        </Row>
+      </div>
+      <div v-if="item.article_type==='转发'">
+        <Row style="margin-top:10px">
+          <Col>
+          <div id="desc" ref="desc" @click="$router.push('/Detail')">{{content(index)}}<span v-if="isAllArticle(index)" style="color:blue">全文</span></div>
+          </Col>
+        </Row>
+        <Row style="margin-top:10px">
+          <Col span="8" style="height:100px;width:33.3333%"><img :src="'/api/img/' + item.articlePicture[0].picture_url" style="height:inherit;width:100%" /></Col>
+          <Col span="16" style="height:100px"><span style="color:blue">{{item.transmit_nickname}}:</span>{{item.transmit_content}}</Col>
+        </Row>
+      </div>
       <Row style="margin-top:10px">
         <Col span="8" style="text-align:center">
-        <i class="fa fa-thumbs-o-up" v-if="!isPraised(index)" @click="praised(index)"></i>
-        <i class="fa fa-thumbs-up" v-if="isPraised(index)" @click="praised(index)"></i>
+        <i class="fa fa-thumbs-o-up" v-if="!item.praise_state" @click="praised(index)"></i>
+        <i class="fa fa-thumbs-up" v-if="item.praise_state" @click="praised(index)"></i>
         {{" " + item.praise_count}}
         </Col>
         <Col span="8" style="text-align:center">
@@ -57,11 +70,9 @@ export default {
       transmitText: '',
       articleData: [],
       articleLength: 0,
-      // praisedSign: [],
     }
   },
   mounted() {
-    var i = 0;
     this.axios({
       method: "get",
       url: "/api/articleList",
@@ -71,9 +82,6 @@ export default {
       },
     }).then((res) => {
       this.articleData = res.data.data;
-      // for (; i < res.data.data.length; i++) {
-      //   this.praisedSign[i] = false
-      // }
     }).catch((err) => {})
   },
   computed: {
@@ -94,27 +102,23 @@ export default {
           return false;
       }
     },
-    isPraised() {
-      return function(index) {
-        return this.praisedSign[index];
-      }
-    },
   },
   methods: {
     praised(index) {
-      if (this.praisedSign[index]) {
+      if (this.articleData[index].praise_state) {
         this.articleData[index].praise_count--;
-        this.praisedSign[index] = false;
+        this.articleData[index].praise_state = 0;
       } else {
         this.articleData[index].praise_count++;
-        this.praisedSign[index] = true;
+        this.articleData[index].praise_state = 1;
       }
       this.axios({
         url: '/api/praise',
         method: 'post',
         params: {
           id: this.articleData[index].id,
-          praiseCount: this.articleData[index].praise_count
+          praiseCount: this.articleData[index].praise_count,
+          praiseState: this.articleData[index].praise_state
         }
       }).then((res) => {
         console.log(res);
