@@ -27,7 +27,7 @@ router.beforeEach((to, from, next) => {
     || (JSON.parse(sessionStorage.getItem("store"))
     && JSON.parse(sessionStorage.getItem("store")).token))
     {
-      console.log(sessionStorage.getItem("store"))
+      // console.log(sessionStorage.getItem("store"))
       next()
     }
   else {

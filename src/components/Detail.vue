@@ -6,39 +6,39 @@
   <Card id="detailContent" dis-hover :bordered="false">
     <Row>
       <Col span="4">
-        <div id="head"><img src="../assets/guanyu.png" /></div>
+        <div id="head"><img :src="'/api/img/' + detail.head" /></div>
       </Col>
       <Col span="20" style="height:40px;">
         <Row>
-          <Col span="12">关羽</Col>
-          <Col span="12" style="text-align:right;">荆州南郡</Col>
+          <Col span="12">{{detail.nickname}}</Col>
+          <Col span="12" style="text-align:right;">{{detail.location}}</Col>
         </Row>
         <Row>
-          <Col style="font-size: 12px;color:#bbb;line-height: 25px;padding-bottom: 0px;height: 20px;">1小时前</Col>
+          <Col style="font-size: 12px;color:#bbb;line-height: 25px;padding-bottom: 0px;height: 20px;">{{format(detail.publish_time)}}</Col>
         </Row>
       </Col>
     </Row>
     <Row style="margin-top:10px">
       <Col>
-      <div ref="desc" style="border: 0;width: 100%;color:inherit;word-break:break-all;white-space:pre-wrap;text-align:justify">{{desc}}</div>
+      <div ref="desc" style="border: 0;width: 100%;color:inherit;word-break:break-all;white-space:pre-wrap;text-align:justify">{{detail.content}}</div>
       </Col>
     </Row>
     <Row style="margin-top:10px">
-      <Col v-for="(item, imgIndex) in imgList" :key="imgIndex" span="8" style="height:100px;width:33.3333%"><img :src="item.imgsrc" style="height:inherit;width:100%" /></Col>
+      <Col v-for="(item, imgIndex) in detail.articlePicture" :key="imgIndex" span="8" style="height:100px;width:33.3333%"><img :src="'/api/img/' + item.picture_url" style="height:inherit;width:100%" /></Col>
     </Row>
     <Row style="margin:10px auto;">
       <Col span="8" style="text-align:center">
-      <i class="fa fa-thumbs-o-up" v-if="isPraised==false" @click="praise()"></i>
-      <i class="fa fa-thumbs-up" v-if="isPraised==true" @click="praise()"></i>
-      {{" " + countList[0]}}
+      <i class="fa fa-thumbs-o-up" v-if="!detail.praise_state" @click="praise()"></i>
+      <i class="fa fa-thumbs-up" v-if="detail.praise_state" @click="praise()"></i>
+      {{" " + detail.praise_count}}
       </Col>
       <Col span="8" style="text-align:center">
       <i class="fa fa-commenting-o" @click="commentModal=true"></i>
-      {{" " + countList[1]}}
+      {{" " + detail.comment_count}}
       </Col>
       <Col span="8" style="text-align:center">
       <i class="fa fa-external-link" @click="transmitModal=true"></i>
-      {{" " + countList[2]}}
+      {{" " + detail.transmit_count}}
       </Col>
     </Row>
     <Row v-for="(item, commentListIndex) in commentList" :key="commentListIndex" style="padding:5px 0 10px;border-top:1px solid #eee;">
@@ -65,7 +65,7 @@
         </Col>
       </Row>
     </Row>
-    <Modal v-model="transmitModal" @on-ok="ok" :mask-closable="false" :closable="false">
+    <Modal v-model="transmitModal" @on-ok="transmit()" :mask-closable="false" :closable="false">
       <textarea placeholder="输入转发理由" v-model="transmitText" autofocus="true" style="width:100%;resize:none;border:0;"></textarea>
     </Modal>
     <Modal v-model="commentModal" @on-ok="ok" :mask-closable="false" :closable="false">
@@ -79,30 +79,10 @@ export default {
   name: 'Detail',
   data() {
     return {
+      detail: '',
       transmitModal: false,
       commentModal: false,
       isPraised: false,
-      desc: "看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！看尔乃插标卖首！",
-      imgList: [{
-        imgsrc: require('../assets/huaxiong.png')
-      }, {
-        imgsrc: require('../assets/yanliangwenchou.png')
-      }, {
-        imgsrc: require('../assets/pangde.png')
-      }, {
-        imgsrc: require('../assets/huaxiong.png')
-      }, {
-        imgsrc: require('../assets/yanliangwenchou.png')
-      }, {
-        imgsrc: require('../assets/pangde.png')
-      }, {
-        imgsrc: require('../assets/huaxiong.png')
-      }, {
-        imgsrc: require('../assets/yanliangwenchou.png')
-      }, {
-        imgsrc: require('../assets/pangde.png')
-      }],
-      countList: [400, 39, 7],
       transmitText: '',
       commentText: '',
       commentList: [{
@@ -126,17 +106,64 @@ export default {
       }]
     }
   },
+  mounted() {
+    this.axios({
+      url: '/api/detail',
+      method: 'post',
+      params: {
+        id: this.$route.query.articleId
+      }}).then((res) => {
+        this.detail = res.data.data
+        console.log(res);
+    })
+  },
+  computed: {
+    format() {
+      return this.$store.getters.format
+    }
+  },
   methods: {
     praise() {
-      if (this.isPraised) {
-        this.countList[0]--;
-        this.isPraised = false;
+      if (this.detail.praise_state) {
+        this.detail.praise_count--;
+        this.detail.praise_state = 0;
       } else {
-        this.countList[0]++;
-        this.isPraised = true;
+        this.detail.praise_count++;
+        this.detail.praise_state = 1;
       }
+      this.axios({
+        url: '/api/praise',
+        method: 'post',
+        params: {
+          id: this.detail.id,
+          praiseCount: this.detail.praise_count,
+          praiseState: this.detail.praise_state
+        }
+      }).then((res) => {
+        console.log(res);
+      }).catch((err) => {
+        console.log(err);
+      })
     },
-    ok() {
+    transmit() {
+      var that = this;
+      var currentDate = new Date();
+      this.axios.post('/api/transmit', {
+        "article_type": "转发",
+        "content": that.transmitText,
+        "head": that.$store.state.headImgSrc,
+        "location": that.$store.getters.pos,
+        "nickname": that.$store.state.nickname,
+        "publish_time": currentDate,
+        "transmit_content": that.detail.content,
+        "transmit_id": that.detail.id,
+        "transmit_nickname": that.detail.nickname
+      }).then((res) => {
+        // console.log(res)
+      })
+      this.$router.push('/Main');
+      // 每次添加评论后清空内容，用以处理v-model带来的问题
+      this.transmitText = "";
     },
     addReply() {
       console.log(111)

@@ -13,14 +13,14 @@
           <Col span="12" style="text-align:right;">{{item.location}}</Col>
         </Row>
         <Row>
-          <Col id="time-col">{{item.publish_time}}</Col>
+          <Col id="time-col">{{format(item.publish_time)}}</Col>
         </Row>
         </Col>
       </Row>
-      <div v-if="item.article_type==='原创'">
+      <div v-if="item.article_type==='原创'" @click="$router.push({path:'/Detail', query: {articleId: item.id}})">
         <Row style="margin-top:10px">
           <Col>
-          <div id="desc" ref="desc" @click="$router.push('/Detail')">{{content(index)}}<span v-if="isAllArticle(index)" style="color:blue">全文</span></div>
+          <div id="desc" ref="desc">{{content(index)}}<span v-if="isAllArticle(index)" style="color:blue">全文</span></div>
           </Col>
         </Row>
         <Row style="margin-top:10px">
@@ -28,14 +28,14 @@
         </Row>
       </div>
       <div v-if="item.article_type==='转发'">
-        <Row style="margin-top:10px">
+        <Row style="margin-top:10px" @click.native="$router.push({path:'/Detail', query: {articleId: item.id}})">
           <Col>
-          <div id="desc" ref="desc" @click="$router.push('/Detail')">{{content(index)}}<span v-if="isAllArticle(index)" style="color:blue">全文</span></div>
+          <div id="desc" ref="desc">{{content(index)}}<span v-if="isAllArticle(index)" style="color:blue">全文</span></div>
           </Col>
         </Row>
-        <Row style="margin-top:10px">
-          <Col span="8" style="height:100px;width:33.3333%"><img :src="'/api/img/' + item.articlePicture[0].picture_url" style="height:inherit;width:100%" /></Col>
-          <Col span="16" style="height:100px"><span style="color:blue">{{item.transmit_nickname}}:</span>{{item.transmit_content}}</Col>
+        <Row style="margin-top:10px" @click.native="$router.push({path:'/Detail', query: {articleId: item.transmit_id}})">
+          <Col span="8" style="height:100px;width:33.3333%" v-if="item.transmitPicture.length!=0"><img v-if="item.transmitPicture.length!=0" :src="'/api/img/' + item.transmitPicture[0].picture_url" style="height:inherit;width:100%" /></Col>
+          <Col span="16" id="transmit-content" :class="[item.transmitPicture.length ? '' : imgNotExist]"><span style="color:blue">{{item.transmit_nickname}}:</span>{{item.transmit_content}}</Col>
         </Row>
       </div>
       <Row style="margin-top:10px">
@@ -45,17 +45,17 @@
         {{" " + item.praise_count}}
         </Col>
         <Col span="8" style="text-align:center">
-        <i class="fa fa-commenting-o" @click="$router.push('/Detail')"></i>
+        <i class="fa fa-commenting-o" @click="$router.push({path:'/Detail', query: {articleId: item.id}})"></i>
         {{" " + item.comment_count}}
         </Col>
         <Col span="8" style="text-align:center">
-        <i class="fa fa-external-link" @click="transmitModal=true"></i>
+        <i class="fa fa-external-link" @click="getCurrentIndex(index)"></i>
         {{" " + item.transmit_count}}
         </Col>
       </Row>
     </Card>
   </Scroll>
-  <Modal v-model="transmitModal" @on-ok="ok" :mask-closable="false" :closable="false" :transfer="false">
+  <Modal v-model="transmitModal" @on-ok="transmit(currentIndex)" :mask-closable="false" :closable="false" :transfer="false">
     <textarea id="transmit-area" placeholder="输入转发理由" v-model="transmitText" autofocus="true"></textarea>
   </Modal>
   <Footer style=""></Footer>
@@ -70,6 +70,8 @@ export default {
       transmitText: '',
       articleData: [],
       articleLength: 0,
+      currentIndex: 0,
+      imgNotExist: 'img-not-exist',
     }
   },
   mounted() {
@@ -102,8 +104,15 @@ export default {
           return false;
       }
     },
+    format() {
+      return this.$store.getters.format
+    },
   },
   methods: {
+    getCurrentIndex(index) {
+      this.transmitModal = true;
+      this.currentIndex = index;
+    },
     praised(index) {
       if (this.articleData[index].praise_state) {
         this.articleData[index].praise_count--;
@@ -144,8 +153,25 @@ export default {
         }, 2000);
       });
     },
-    ok() {
-      console.log(this.transmitText)
+    transmit(index) {
+      var that = this;
+      var currentDate = new Date();
+      this.axios.post('/api/transmit', {
+        "article_type": "转发",
+        "content": that.transmitText,
+        "head": that.$store.state.headImgSrc,
+        "location": that.$store.getters.pos,
+        "nickname": that.$store.state.nickname,
+        "publish_time": currentDate,
+        "transmit_content": that.articleData[index].content,
+        "transmit_id": that.articleData[index].id,
+        "transmit_nickname": that.articleData[index].nickname
+      }).then((res) => {
+        // console.log(res)
+      })
+      location.reload();
+      // 每次添加评论后清空内容，用以处理v-model带来的问题
+      this.transmitText = "";
     }
   }
 }
@@ -182,6 +208,27 @@ export default {
   width: 100%;
   resize: none;
   border: 0;
+}
+
+#transmit-content {
+  height: 100px;
+  /* width: 100%; */
+  background-color: rgba(167, 164, 164, 0.2);
+  padding: 0 5px;
+  word-break: break-all;
+  white-space: pre-wrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  text-align: justify;
+  -webkit-line-clamp: 5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.img-not-exist {
+  height: auto !important;
+  width: 100% !important;
+  text-align: justify;
 }
 
 #head {

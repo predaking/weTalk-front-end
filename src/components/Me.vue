@@ -58,7 +58,7 @@ export default {
         file.url = reader.result
         if (file.type.slice(0, 5) == "image") {
             _this.headImgSrc = file.url;
-            console.log(file)
+            // console.log(file)
         }
       }
     },
