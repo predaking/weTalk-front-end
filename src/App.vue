@@ -1,5 +1,5 @@
 <template>
-<router-view></router-view>
+<router-view v-if="isRouterAlive"></router-view>
 </template>
 
 <script>
@@ -8,7 +8,12 @@ export default {
   name: 'App',
   data() {
     return {
-
+      isRouterAlive: true
+    }
+  },
+  provide() {
+    return {
+      reload: this.reload
     }
   },
   created() {
@@ -16,12 +21,20 @@ export default {
       this.$store.replaceState(Object.assign({}, this.$store.state, JSON.parse(sessionStorage.getItem("store"))));
       // console.log(sessionStorage.getItem("store"));
     }
-    window.addEventListener("beforeunload",()=>{
-        sessionStorage.setItem("store",JSON.stringify(this.$store.state))
+    window.addEventListener("beforeunload", () => {
+      sessionStorage.setItem("store", JSON.stringify(this.$store.state))
     })
   },
   mounted() {
 
+  },
+  methods: {
+    reload() {
+      this.isRouterAlive = false;
+      this.$nextTick(function() {
+        this.isRouterAlive = true;
+      })
+    }
   }
 }
 </script>
@@ -152,6 +165,7 @@ textarea:focus {
 .ivu-scroll-loader-wrapper-active {
   height: 80px !important;
 }
+
 /* iview确认框样式修改 */
 .ivu-modal-body {
   font-size: inherit;

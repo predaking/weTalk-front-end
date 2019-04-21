@@ -66,7 +66,6 @@ export default {
   data() {
     return {
       transmitModal: false,
-      list3: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       transmitText: '',
       articleData: [],
       articleLength: 0,
@@ -167,9 +166,17 @@ export default {
         "transmit_id": that.articleData[index].id,
         "transmit_nickname": that.articleData[index].nickname
       }).then((res) => {
-        // console.log(res)
+        this.axios({
+          method: "get",
+          url: "/api/articleList",
+          // url: "/api/data",
+          headers: {
+            token: this.$store.state.token
+          },
+        }).then((res) => {
+          this.articleData = res.data.data;
+        }).catch((err) => {})
       })
-      location.reload();
       // 每次添加评论后清空内容，用以处理v-model带来的问题
       this.transmitText = "";
     }
