@@ -38,15 +38,15 @@ export default {
         'token': this.$store.state.token
       },
       uploadData: {
-        nickname: this.$store.state.nickname
+        "id": this.$store.state.user_id
       },
       uploadAction: '/api/changeHead'
     }
   },
   mounted() {
-    // if(localStorage.getItem('headImgSrc'))
     this.headImgSrc = this.$store.state.headImgSrc;
     this.nickname = this.$store.state.nickname;
+    console.log(this.$store.state.user_id)
   },
   methods: {
     handleBeforeUpload(file) {

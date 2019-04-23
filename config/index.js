@@ -10,6 +10,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/api': {
+        // target: 'http://10.1.112.53:8080',
         target: 'http://24x410t862.qicp.vip:46650',
         // target: 'http://localhost:3000', // 接口的域名
         // secure: false,  // 如果是https接口，需要配置这个参数

@@ -1,5 +1,10 @@
 <template>
-<router-view v-if="isRouterAlive"></router-view>
+<div>
+  <keep-alive>
+    <router-view v-if="isRouterAlive && $route.meta.keepAlive"></router-view>
+  </keep-alive>
+  <router-view v-if="isRouterAlive && !$route.meta.keepAlive"></router-view>
+</div>
 </template>
 
 <script>
@@ -153,17 +158,13 @@ textarea:focus {
 }
 
 .ivu-scroll-content {
-  padding-bottom: 50px !important;
-  /* padding-top: 15px !important; */
-}
-
-.ivu-spin-fix .ivu-spin-main {
-  top: 0 !important;
-  bottom: -65px;
+  /* padding-bottom: 40px !important;
+  padding-top: 10px !important; */
 }
 
 .ivu-scroll-loader-wrapper-active {
-  height: 80px !important;
+  /* display: none !important; */
+  height: 20px !important;
 }
 
 /* iview确认框样式修改 */
@@ -177,5 +178,41 @@ textarea:focus {
 
 .ivu-modal-confirm-body {
   padding-left: 0 !important
+}
+
+/* 加载图标动画 */
+.demo-spin-icon-load {
+  animation: ani-demo-spin 1s linear infinite;
+}
+
+@keyframes ani-demo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(180deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.demo-spin-col {
+  height: 10px;
+  margin-top: 10px;
+  position: relative;
+  /* border: 1px solid #eee; */
+}
+
+/* 加载图标样式 */
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  margin: auto auto;
+  width: 32px;
 }
 </style>

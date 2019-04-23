@@ -13,52 +13,64 @@ import Main from '@/components/Main'
 import Detail from '@/components/Detail'
 Vue.use(Router)
 const router = new Router({
+  mode: 'history',
+  // scrollBehavior (to, from, savedPosition) {
+  //   if (savedPosition) {
+  //     return savedPosition
+  //   } else {
+  //     return {
+  //       x: 0,
+  //       y: 0
+  //     }
+  //   }
+  // },
   routes: [
     {
       path: '/Main',
       name: 'Main',
-      component: Main
+      component: Main,
+      meta: {
+        keepAlive: true
+      }
     },
     {
       path: '/Detail',
       name: 'Detail',
-      component: Detail
+      component: Detail,
+      meta: {
+        keepAlive: false
+      }
     },
     {
       path: '/',
       name: 'Login',
-      component: Login
+      component: Login,
     },
     {
       path: '/Me/Register',
       name: 'Register',
-      component: Register
+      component: Register,
     },
     {
       path: '/Me',
       name: 'Me',
-      component: Me
+      component: Me,
     },
     {
       path: '/Me/ChangeInfo',
       name: 'ChangeInfo',
-      component: ChangeInfo
+      component: ChangeInfo,
     },
     {
       path: '/Me/ChangePsw',
       name: 'ChangePsw',
-      component: ChangePsw
+      component: ChangePsw,
     },
     {
       path:'/Publish',
       name:'Publish',
-      component:Publish
+      component:Publish,
     },
-    {
-      path:'/Biography',
-      name:'Biography',
-      component:Biography
-    }
   ]
 })
 // router.beforeEach((to, from, next)=>{

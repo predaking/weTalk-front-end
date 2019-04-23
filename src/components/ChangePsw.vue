@@ -3,8 +3,8 @@
   <Card id="topSide" :bordered="false">
     <Icon type="ios-arrow-back" id="back" @click="$router.go(-1)"></Icon>修改密码
   </Card>
-  <div class="item" style="margin-top:80px;border-top:0"><span class="label">原始密码</span><input class="info" type="password" placeholder="请输入原始密码" maxlength="8"/></div>
-  <div class="item"><span class="label">新密码</span><input class="info" type="password" placeholder="请输入新密码"maxlength="8"/></div>
+  <div class="item" style="margin-top:80px;border-top:0"><span class="label">原始密码</span><input class="info" type="password" placeholder="请输入原始密码" maxlength="18"/></div>
+  <div class="item"><span class="label">新密码</span><input class="info" type="password" placeholder="请输入新密码" maxlength="18"/></div>
 </div>
 </template>
 <script>

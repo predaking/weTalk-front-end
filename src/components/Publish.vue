@@ -106,6 +106,7 @@ export default {
       for (var i = 0; i < this.uploadList.length; i++) {
         formData.append("files", this.uploadList[i])
       }
+      formData.append("user_id", this.$store.state.user_id);
       formData.append("nickname", this.$store.state.nickname);
       formData.append("head", this.$store.state.headImgSrc);
       formData.append("location", this.pos);

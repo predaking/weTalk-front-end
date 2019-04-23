@@ -71,6 +71,7 @@ export default {
               })
               if(res.data.head)
               this.$store.state.headImgSrc = '/api/img/' + res.data.head;
+              // this.$store.state.headImgSrc = res.data.head;
               sessionStorage.setItem("store",JSON.stringify(this.$store.state))
               this.$router.push('/Main');
             }

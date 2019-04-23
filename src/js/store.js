@@ -20,6 +20,7 @@ const store = new Vuex.Store({
   },
   mutations: {
     loginInfo(state, payload) {
+      store.state.user_id = payload.user_id;
       store.state.token = payload.token;
       store.state.nickname = payload.nickname;
     }

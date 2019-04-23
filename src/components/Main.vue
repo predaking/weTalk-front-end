@@ -1,11 +1,18 @@
 <template>
 <div>
   <Card id="topSide" :bordered="false"><a href="#content" style="color:#fff">动态</a></Card>
-  <Scroll id="scroll" :on-reach-bottom="handleReachBottom" :distance-to-edge=[0,0]>
+  <Spin size="large" v-if="!loaded" class="loading"></Spin>
+  <Error v-if="error" errorContent="网络错误" v-on:reload="loading()"></Error>
+  <Scroll v-if="loaded && !error" id="scroll" :on-reach-bottom="handleReachBottom" :on-reach-top="handleReachTop" loading-text="" :distance-to-edge=[0,0]>
+    <!-- <Col class="demo-spin-col" v-if="isTopFreahing">
+    <Spin fix>
+      <Icon type="ios-loading" size=18 class="demo-spin-icon-load"></Icon>
+    </Spin>
+    </Col> -->
     <Card id="content" dis-hover v-for="(item, index) in articleData" :key="index" :bordered="false">
       <Row>
         <Col span="4">
-        <div id="head"><img :src="'/api/img/' + item.head" /></div>
+        <div id="head"><img :src="item.head" /></div>
         </Col>
         <Col span="20" style="height:40px;">
         <Row>
@@ -54,6 +61,11 @@
         </Col>
       </Row>
     </Card>
+    <!-- <Col class="demo-spin-col" v-if="isBottomFreahing">
+    <Spin fix>
+      <Icon type="ios-loading" size=18 class="demo-spin-icon-load"></Icon>
+    </Spin>
+    </Col> -->
   </Scroll>
   <Modal v-model="transmitModal" @on-ok="transmit(currentIndex)" :mask-closable="false" :closable="false" :transfer="false">
     <textarea id="transmit-area" placeholder="输入转发理由" v-model="transmitText" autofocus="true"></textarea>
@@ -68,22 +80,21 @@ export default {
       transmitModal: false,
       transmitText: '',
       articleData: [],
-      articleLength: 0,
+      // articleLength: 0,
       currentIndex: 0,
       imgNotExist: 'img-not-exist',
+      page: 0,
+      loaded: false,
+      error: false,
+      isAll: false,
+      // 记录是否有新内容
+      hasNew: true,
+      // 记录总数，用以检测每次请求后的新总数是否一致，是则表示有新的内容
+      totalElements: 0,
     }
   },
   mounted() {
-    this.axios({
-      method: "get",
-      url: "/api/articleList",
-      // url: "/api/data",
-      headers: {
-        token: this.$store.state.token
-      },
-    }).then((res) => {
-      this.articleData = res.data.data;
-    }).catch((err) => {})
+    this.loading();
   },
   computed: {
     content() {
@@ -108,6 +119,26 @@ export default {
     },
   },
   methods: {
+    loading() {
+      this.axios({
+        method: "get",
+        url: "/api/articleList",
+        headers: {
+          token: this.$store.state.token
+        },
+        params: {
+          page: 0,
+          size: 10
+        }
+      }).then((res) => {
+        console.log(res)
+        this.articleData = res.data.data.content;
+        this.totalElements = res.data.data.totalElements;
+        this.loaded = true;
+      }).catch((err) => {
+        console.log(err.response)
+      })
+    },
     getCurrentIndex(index) {
       this.transmitModal = true;
       this.currentIndex = index;
@@ -135,21 +166,63 @@ export default {
       })
     },
     handleReachBottom(dir) {
+      this.isBottomFreahing = true
+      if (!this.isAll) {
+        return new Promise(resolve => {
+          this.axios({
+            method: "get",
+            url: "/api/articleList",
+            headers: {
+              token: this.$store.state.token
+            },
+            params: {
+              page: ++this.page,
+              size: 10
+            }
+          }).then((res) => {
+            if (res.data.data.empty) {
+              this.isAll = true;
+              this.$Message.info({
+                content: "已经到底啦！！！"
+              })
+            } else {
+              this.articleData = this.articleData.concat(res.data.data.content);
+            }
+            resolve();
+          }).catch((err) => {})
+        });
+      } else {
+        this.$Message.info({
+          content: "已经到底啦！！！"
+        });
+      }
+    },
+    handleReachTop() {
+      // 相当于重新请求列表
+      this.page = 0;
+      this.isAll = false;
       return new Promise(resolve => {
-        setTimeout(() => {
-          if (dir > 0) {
-            const first = this.list3[0];
-            for (let i = 1; i < 11; i++) {
-              this.list3.unshift(first - i);
-            }
+        this.axios({
+          method: "get",
+          url: "/api/articleList",
+          headers: {
+            token: this.$store.state.token
+          },
+          params: {
+            page: 0,
+            size: 10
+          }
+        }).then((res) => {
+          this.articleData = res.data.data.content;
+          if (res.data.data.totalElements === this.totalElements) {
+            this.$Message.info("暂无更多新内容！！");
+            this.hasNew = false;
           } else {
-            const last = this.list3[this.list3.length - 1];
-            for (let i = 1; i < 11; i++) {
-              this.list3.push(last + i);
-            }
+            this.totalElements = res.data.data.totalElements;
+            this.hasNew = true;
           }
           resolve();
-        }, 2000);
+        }).catch((err) => {})
       });
     },
     transmit(index) {
@@ -158,6 +231,7 @@ export default {
       this.axios.post('/api/transmit', {
         "article_type": "转发",
         "content": that.transmitText,
+        "user_id": that.$store.state.user_id,
         "head": that.$store.state.headImgSrc,
         "location": that.$store.getters.pos,
         "nickname": that.$store.state.nickname,
@@ -166,16 +240,9 @@ export default {
         "transmit_id": that.articleData[index].id,
         "transmit_nickname": that.articleData[index].nickname
       }).then((res) => {
-        this.axios({
-          method: "get",
-          url: "/api/articleList",
-          // url: "/api/data",
-          headers: {
-            token: this.$store.state.token
-          },
-        }).then((res) => {
-          this.articleData = res.data.data;
-        }).catch((err) => {})
+        this.loading();
+      }).catch((err) => {
+
       })
       // 每次添加评论后清空内容，用以处理v-model带来的问题
       this.transmitText = "";
@@ -187,6 +254,7 @@ export default {
 #scroll {
   background-color: #fff;
   padding-top: 45px;
+  padding-bottom: 50px;
 }
 
 #content {

@@ -1,12 +1,14 @@
 <template>
 <div>
   <Card id="topSide" :bordered="false">
-    <Icon type="ios-arrow-back" id="back" @click="$router.go(-1)"></Icon>动态详情
+    <Icon type="ios-arrow-back" id="back" @click="goBack()"></Icon>动态详情
   </Card>
-  <Card id="detailContent" dis-hover :bordered="false">
+  <Spin size="large" v-if="!loaded" class="loading"></Spin>
+  <Error v-if="error" errorContent="网络错误" v-on:reload="loading()"></Error>
+  <Card v-if="loaded && !error" id="detailContent" dis-hover :bordered="false">
     <Row>
       <Col span="4">
-      <div id="head"><img :src="'/api/img/' + detail.head" /></div>
+      <div id="head"><img :src="detail.head" /></div>
       </Col>
       <Col span="20" style="height:40px;">
       <Row>
@@ -38,22 +40,22 @@
       <Row style="margin-top:10px">
         <Col v-for="(item, imgIndex) in detail.articlePicture" :key="imgIndex" span="8" style="height:100px;width:33.3333%"><img :src="'/api/img/' + item.picture_url" style="height:inherit;width:100%" /></Col>
       </Row>
-      <Row style="margin:10px auto;">
-        <Col span="8" style="text-align:center">
-        <i class="fa fa-thumbs-o-up" v-if="!detail.praise_state" @click="praise()"></i>
-        <i class="fa fa-thumbs-up" v-if="detail.praise_state" @click="praise()"></i>
-        {{" " + detail.praise_count}}
-        </Col>
-        <Col span="8" style="text-align:center">
-        <i class="fa fa-commenting-o" @click="commentModal=true"></i>
-        {{" " + detail.comment_count}}
-        </Col>
-        <Col span="8" style="text-align:center">
-        <i class="fa fa-external-link" @click="transmitModal=true"></i>
-        {{" " + detail.transmit_count}}
-        </Col>
-      </Row>
     </div>
+    <Row style="margin:10px auto;">
+      <Col span="8" style="text-align:center">
+      <i class="fa fa-thumbs-o-up" v-if="!detail.praise_state" @click="praise()"></i>
+      <i class="fa fa-thumbs-up" v-if="detail.praise_state" @click="praise()"></i>
+      {{" " + detail.praise_count}}
+      </Col>
+      <Col span="8" style="text-align:center">
+      <i class="fa fa-commenting-o" @click="commentModal=true"></i>
+      {{" " + detail.comment_count}}
+      </Col>
+      <Col span="8" style="text-align:center">
+      <i class="fa fa-external-link" @click="transmitModal=true"></i>
+      {{" " + detail.transmit_count}}
+      </Col>
+    </Row>
     <Row v-for="(item, index) in detail.comments" :key="index" style="padding:5px 0 10px;border-top:1px solid #eee;">
       <Row>
         <Col span="4">
@@ -106,18 +108,12 @@ export default {
       replyText: '',
       imgNotExist: 'img-not-exist',
       currentIndex: 0,
+      loaded: false,
+      error: false,
     }
   },
   mounted() {
-    this.axios({
-      url: '/api/detail',
-      method: 'post',
-      params: {
-        id: this.$route.query.articleId
-      }
-    }).then((res) => {
-      this.detail = res.data.data;
-    })
+    this.loading();
   },
   computed: {
     format() {
@@ -125,6 +121,21 @@ export default {
     }
   },
   methods: {
+    goBack() {
+      this.$router.back();
+    },
+    loading() {
+      this.axios({
+        url: '/api/detail',
+        method: 'post',
+        params: {
+          id: this.$route.query.articleId
+        }
+      }).then((res) => {
+        this.detail = res.data.data;
+        this.loaded = true;
+      })
+    },
     praise() {
       if (this.detail.praise_state) {
         this.detail.praise_count--;
@@ -149,6 +160,7 @@ export default {
       this.axios.post('/api/transmit', {
         "article_type": "转发",
         "content": that.transmitText,
+        "user_id": that.$store.state.user_id,
         "head": that.$store.state.headImgSrc,
         "location": that.$store.getters.pos,
         "nickname": that.$store.state.nickname,
@@ -157,15 +169,7 @@ export default {
         "transmit_id": that.detail.id,
         "transmit_nickname": that.detail.nickname
       }).then((res) => {
-        this.axios({
-          url: '/api/detail',
-          method: 'post',
-          params: {
-            id: this.$route.query.articleId
-          }
-        }).then((res) => {
-          this.detail = res.data.data;
-        })
+        this.loading();
       })
       this.reload();
       // 每次添加评论后清空内容，用以处理v-model带来的问题
@@ -175,20 +179,13 @@ export default {
       var currentDate = new Date();
       this.axios.post('/api/addComment', {
         "comment_id": this.$route.query.articleId,
+        "comment_user_id": this.$store.state.user_id,
         "comment_user": this.$store.state.nickname,
         "comment_user_head": this.$store.state.headImgSrc,
         "comment_time": currentDate,
         "comment_content": this.commentText
       }).then((res) => {
-        this.axios({
-          url: '/api/detail',
-          method: 'post',
-          params: {
-            id: this.$route.query.articleId
-          }
-        }).then((res) => {
-          this.detail = res.data.data;
-        })
+        this.loading();
       })
       this.commentText = "";
     },
@@ -196,18 +193,11 @@ export default {
       var currentDate = new Date();
       this.axios.post('/api/addReply', {
         "reply_id": this.detail.comments[currentIndex].id,
+        "reply_user_id": this.$store.state.user_id,
         "reply_user": this.$store.state.nickname,
         "reply_content": this.replyText
       }).then((res) => {
-        this.axios({
-          url: '/api/detail',
-          method: 'post',
-          params: {
-            id: this.$route.query.articleId
-          }
-        }).then((res) => {
-          this.detail = res.data.data;
-        })
+        this.loading();
       })
       this.replyText = "";
     },
