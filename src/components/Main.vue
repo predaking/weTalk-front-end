@@ -2,7 +2,7 @@
 <div>
   <Card id="topSide" :bordered="false"><a href="#content" style="color:#fff">动态</a></Card>
   <Spin size="large" v-if="!loaded" class="loading"></Spin>
-  <Error v-if="error" errorContent="网络错误" v-on:reload="loading()"></Error>
+  <Error v-if="error" :errorContent="$store.state.errorContent" v-on:reload="loading()"></Error>
   <Scroll v-if="loaded && !error" id="scroll" :on-reach-bottom="handleReachBottom" :on-reach-top="handleReachTop" loading-text="" :distance-to-edge=[0,0]>
     <!-- <Col class="demo-spin-col" v-if="isTopFreahing">
     <Spin fix>
@@ -20,7 +20,15 @@
           <Col span="12" style="text-align:right;">{{item.location}}</Col>
         </Row>
         <Row>
-          <Col id="time-col">{{format(item.publish_time)}}</Col>
+          <Col id="time-col" span="12">{{format(item.publish_time)}}</Col>
+          <Col v-if="$store.state.user_id === item.user_id" span="12" style="text-align:right">
+          <Dropdown>
+            <Icon type="ios-arrow-down"></Icon>
+            <DropdownMenu slot="list">
+              <DropdownItem @click.native="deleteArticle(item.id, index)">删除</DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+          </Col>
         </Row>
         </Col>
       </Row>
@@ -31,7 +39,7 @@
           </Col>
         </Row>
         <Row style="margin-top:10px">
-          <Col v-for="(img, imgIndex) in item.articlePicture" :key="imgIndex" span="8" style="height:100px;width:33.3333%"><img :src="'/api/img/' + img.picture_url" style="height:inherit;width:100%" /></Col>
+          <Col v-for="(img, imgIndex) in item.articlePicture" :key="imgIndex" span="8" style="height:100px;width:33.3333%"><img :src="'http://24x410t862.qicp.vip:46650/img/' + img.picture_url" style="height:inherit;width:100%" /></Col>
         </Row>
       </div>
       <div v-if="item.article_type==='转发'">
@@ -41,7 +49,7 @@
           </Col>
         </Row>
         <Row style="margin-top:10px" @click.native="$router.push({path:'/Detail', query: {articleId: item.transmit_id}})">
-          <Col span="8" style="height:100px;width:33.3333%" v-if="item.transmitPicture.length!=0"><img v-if="item.transmitPicture.length!=0" :src="'/api/img/' + item.transmitPicture[0].picture_url" style="height:inherit;width:100%" /></Col>
+          <Col span="8" style="height:100px;width:33.3333%" v-if="item.transmitPicture.length!=0"><img v-if="item.transmitPicture.length!=0" :src="'http://24x410t862.qicp.vip:46650/img/' + item.transmitPicture[0].picture_url" style="height:inherit;width:100%" /></Col>
           <Col span="16" id="transmit-content" :class="[item.transmitPicture.length ? '' : imgNotExist]"><span style="color:blue">{{item.transmit_nickname}}:</span>{{item.transmit_content}}</Col>
         </Row>
       </div>
@@ -61,11 +69,6 @@
         </Col>
       </Row>
     </Card>
-    <!-- <Col class="demo-spin-col" v-if="isBottomFreahing">
-    <Spin fix>
-      <Icon type="ios-loading" size=18 class="demo-spin-icon-load"></Icon>
-    </Spin>
-    </Col> -->
   </Scroll>
   <Modal v-model="transmitModal" @on-ok="transmit(currentIndex)" :mask-closable="false" :closable="false" :transfer="false">
     <textarea id="transmit-area" placeholder="输入转发理由" v-model="transmitText" autofocus="true"></textarea>
@@ -91,6 +94,7 @@ export default {
       hasNew: true,
       // 记录总数，用以检测每次请求后的新总数是否一致，是则表示有新的内容
       totalElements: 0,
+      errorContent: ''
     }
   },
   mounted() {
@@ -122,7 +126,7 @@ export default {
     loading() {
       this.axios({
         method: "get",
-        url: "/api/articleList",
+        url: "http://24x410t862.qicp.vip:46650/articleList",
         headers: {
           token: this.$store.state.token
         },
@@ -136,7 +140,11 @@ export default {
         this.totalElements = res.data.data.totalElements;
         this.loaded = true;
       }).catch((err) => {
-        console.log(err.response)
+        this.$store.commit('errorInfo', {
+          status: err.response.status
+        });
+        this.loaded = true;
+        this.error = true;
       })
     },
     getCurrentIndex(index) {
@@ -152,7 +160,7 @@ export default {
         this.articleData[index].praise_state = 1;
       }
       this.axios({
-        url: '/api/praise',
+        url: 'http://24x410t862.qicp.vip:46650/praise',
         method: 'post',
         params: {
           id: this.articleData[index].id,
@@ -166,12 +174,11 @@ export default {
       })
     },
     handleReachBottom(dir) {
-      this.isBottomFreahing = true
       if (!this.isAll) {
         return new Promise(resolve => {
           this.axios({
             method: "get",
-            url: "/api/articleList",
+            url: "http://24x410t862.qicp.vip:46650/articleList",
             headers: {
               token: this.$store.state.token
             },
@@ -204,7 +211,7 @@ export default {
       return new Promise(resolve => {
         this.axios({
           method: "get",
-          url: "/api/articleList",
+          url: "http://24x410t862.qicp.vip:46650/articleList",
           headers: {
             token: this.$store.state.token
           },
@@ -228,7 +235,7 @@ export default {
     transmit(index) {
       var that = this;
       var currentDate = new Date();
-      this.axios.post('/api/transmit', {
+      this.axios.post('http://24x410t862.qicp.vip:46650/transmit', {
         "article_type": "转发",
         "content": that.transmitText,
         "user_id": that.$store.state.user_id,
@@ -241,11 +248,21 @@ export default {
         "transmit_nickname": that.articleData[index].nickname
       }).then((res) => {
         this.loading();
-      }).catch((err) => {
-
-      })
+      }).catch((err) => {})
       // 每次添加评论后清空内容，用以处理v-model带来的问题
       this.transmitText = "";
+    },
+    deleteArticle(id, index) {
+      this.axios({
+        url: 'http://24x410t862.qicp.vip:46650/deleteArticle',
+        method: 'post',
+        params: {
+          "id": id,
+        }
+      }).then((res) => {
+        // this.loading();
+      }).catch((err) => {})
+      this.articleData.splice(index, 1);
     }
   }
 }

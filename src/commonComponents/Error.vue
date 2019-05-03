@@ -1,7 +1,7 @@
 <template>
     <div id="error">
       <img src="../assets/error.gif"/>
-      <p>{{errorContent}}</p>
+      <p id="error-info">{{errorContent}}</p>
       <Button type="success" v-on:click="$emit('reload')">重新加载</Button>
     </div>
 </template>
@@ -26,11 +26,11 @@
 #error {
   position: absolute;
   top: 35%;
-  /* z-index: 1; */
+  z-index: 1;
   left: 0;
   right: 0;
   margin: auto auto;
-  width: 100px;
+  /* width: 100px; */
   height: 100px;
   text-align: center;
   /* background-color: #fff; */
@@ -43,4 +43,7 @@ img {
   width: 100px;
 }
 
+#error-info {
+  margin-bottom: 5px;
+}
 </style>

@@ -40,7 +40,7 @@ export default {
       uploadData: {
         "id": this.$store.state.user_id
       },
-      uploadAction: '/api/changeHead'
+      uploadAction: 'http://24x410t862.qicp.vip:46650/changeHead'
     }
   },
   mounted() {
@@ -76,7 +76,7 @@ export default {
     },
     handleSuccess(res, file) {
       if(res.code === 200) {
-        this.headImgSrc = '/api/img/' + res.data;
+        this.headImgSrc = 'http://24x410t862.qicp.vip:46650/img/' + res.data;
         this.$store.state.headImgSrc = this.headImgSrc;
       }
     },

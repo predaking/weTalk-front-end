@@ -1,9 +1,10 @@
 <template>
 <div>
-  <keep-alive>
+  <!-- <keep-alive>
     <router-view v-if="isRouterAlive && $route.meta.keepAlive"></router-view>
-  </keep-alive>
-  <router-view v-if="isRouterAlive && !$route.meta.keepAlive"></router-view>
+  </keep-alive> -->
+  <router-view></router-view>
+   <!-- v-if="isRouterAlive" -->
 </div>
 </template>
 
@@ -74,7 +75,7 @@ body {
 #login,
 #register {
   height: fill-available;
-  background-color: rgba(0, 31, 255, 0.4);
+  background-color: rgba(144, 158, 255, 0.4);
   padding-top: 100px;
 }
 
@@ -180,6 +181,19 @@ textarea:focus {
   padding-left: 0 !important
 }
 
+.imgModal .ivu-modal-footer {
+  display: none;
+}
+
+/* iview下拉菜单样式更改 */
+.ivu-dropdown-item {
+  text-align: center;
+}
+
+.ivu-select-dropdown {
+  z-index: 0 !important;
+}
+
 /* 加载图标动画 */
 .demo-spin-icon-load {
   animation: ani-demo-spin 1s linear infinite;
@@ -215,4 +229,6 @@ textarea:focus {
   margin: auto auto;
   width: 32px;
 }
+
+
 </style>

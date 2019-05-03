@@ -13,7 +13,8 @@
       </Input>
     </FormItem>
     <FormItem class="loginItem oper">
-      <p class="operspan">记住密码</p><Checkbox style="margin-left:-140px;font-size:16px"></Checkbox>
+      <p class="operspan">记住密码</p>
+      <Checkbox style="margin-left:-140px;font-size:16px" v-model="isChecked"></Checkbox>
       <p class="operspan" @click="$router.push('/Me/Register')">立即注册</p>
     </FormItem>
     <FormItem>
@@ -41,27 +42,38 @@ export default {
           trigger: 'blur'
         }],
         password: [{
-            required: true,
-            message: '密码不能为空',
-            trigger: 'blur'
-          },
-        ]
-      }
+          required: true,
+          message: '密码不能为空',
+          trigger: 'blur'
+        }, ]
+      },
+      isChecked: false,
     }
+  },
+  mounted() {
+    if (localStorage.getItem("user")) {
+      this.isChecked = true;
+      this.formInline.user = localStorage.getItem("user");
+      this.formInline.password = localStorage.getItem("password");
+    } else
+      this.isChecked = false;
+  },
+  watch: {
+
   },
   methods: {
     handleSubmit(name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
           this.axios({
-            method:"post",
-            url: "/api/api/authentication",
+            method: "post",
+            url: "http://24x410t862.qicp.vip:46650/api/authentication",
             data: {
               nickname: this.formInline.user,
               password: this.formInline.password,
             }
-          }).then((res)=>{
-            if(res.data.code === -1)
+          }).then((res) => {
+            if (res.data.code === -1)
               this.$Message.error(res.data.message);
             else {
               this.$store.commit('loginInfo', {
@@ -69,10 +81,10 @@ export default {
                 nickname: res.data.nickname,
                 user_id: res.data.user_id
               })
-              if(res.data.head)
-              this.$store.state.headImgSrc = '/api/img/' + res.data.head;
+              if (res.data.head)
+                this.$store.state.headImgSrc = 'http://24x410t862.qicp.vip:46650/img/' + res.data.head;
               // this.$store.state.headImgSrc = res.data.head;
-              sessionStorage.setItem("store",JSON.stringify(this.$store.state))
+              sessionStorage.setItem("store", JSON.stringify(this.$store.state))
               this.$router.push('/Main');
             }
           })
@@ -80,17 +92,28 @@ export default {
           this.$Message.error('请输入昵称与密码!');
         }
       })
+    },
+    // checked() {
+    //   console.log(this.isChecked + "变了")
+    // }
+  },
+  watch: {
+    isChecked() {
+      if (this.isChecked === true) {
+        localStorage.setItem("user", this.formInline.user);
+        localStorage.setItem("password", this.formInline.password);
+      } else
+        localStorage.clear();
     }
   }
 }
 </script>
 <style scoped>
-
 #logo {
   margin: 0 auto;
   width: 80px;
   height: 80px;
-  background-image: url("../assets/head-girl.jpg");
+  background-image: url("../assets/logo.png");
   background-size: cover;
   background-repeat: no-repeat;
   border-radius: 40px;
@@ -110,6 +133,7 @@ export default {
   color: #fff;
   font-size: 14px;
 }
+
 #login-button {
   margin: auto 40px;
   width: fill-available;

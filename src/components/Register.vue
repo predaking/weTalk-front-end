@@ -97,7 +97,7 @@ export default {
         if (valid) {
           this.axios({
             method:"post",
-            url: "/api/register",
+            url: "http://24x410t862.qicp.vip:46650/register",
             data: {
               nickname: this.formInline.user,
               password: this.formInline.password,
@@ -131,7 +131,7 @@ export default {
   margin: 0 auto;
   width: 80px;
   height: 80px;
-  background-image: url("../assets/head-girl.jpg");
+  background-image: url("../assets/logo.png");
   background-size: cover;
   background-repeat: no-repeat;
   border-radius: 40px;

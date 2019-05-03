@@ -8,12 +8,12 @@
     <textarea id="textArea" placeholder="说你所想..." v-model="content"></textarea>
     <Row>
       <Col span="8" class="demo-upload-list" v-for="(item, index) in uploadList" :key="index" ref="myImgBox">
-      <img :src="item.url" ref="myImg">
+      <img :src="item.url" ref="myImg" @click="viewImg(item.url)">
       <!-- <div class="demo-upload-list-cover"> -->
       <Icon type="ios-close" @click.native="handleRemove(item)" id="moveIcon"></Icon>
       <!-- </div> -->
       </Col>
-      <Upload id="upload" ref="upload" :show-upload-list="false" :format="['jpg','jpeg','png','webp']" :max-size="2048" :before-upload="handleBeforeUpload" :on-format-error="handleFormatError" :on-exceeded-size="handleMaxSize" type="drag" action="/api/publish"
+      <Upload id="upload" ref="upload" :show-upload-list="false" :format="['jpg','jpeg','png','webp']" :max-size="2048" :before-upload="handleBeforeUpload" :on-format-error="handleFormatError" :on-exceeded-size="handleMaxSize" type="drag" action="http://24x410t862.qicp.vip:46650/publish"
         multiple style="display: inline-block;height:100px;line-height: 100px;width:33.3333%;min-width:100px" :class="{ hideUpLoadSign: isHidden}">
         <div style="width: 100%;height:100px;line-height: 100px;color:whitesmoke">
           <Icon type="ios-add" size="80"></Icon>
@@ -24,6 +24,9 @@
       </p>
     </Row>
   </div>
+  <Modal class="imgModal" v-model="visible" :closable="false">
+    <img :src="imgName" v-if="visible" style="width:100%"/>
+  </Modal>
 </div>
 </template>
 <script>
@@ -36,6 +39,8 @@ export default {
       content: '',
       isHidden: false,
       imgsrc: [],
+      imgName: '',
+      visible: false,
     }
   },
   mounted() {
@@ -112,13 +117,17 @@ export default {
       formData.append("location", this.pos);
       formData.append("publish_time", currentDate);
       formData.append("content", this.content);
-      this.axios.post('/api/publish',
+      this.axios.post('http://24x410t862.qicp.vip:46650/publish',
           formData
       ).then((res) => {
         console.log(res);
       })
       this.$router.push('/Main')
     },
+    viewImg(imgName) {
+      this.imgName = imgName;
+      this.visible = true;
+    }
   }
 }
 </script>
